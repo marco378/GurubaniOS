@@ -83,7 +83,7 @@ const ShabadContentPanel = ({
   const defaultShabadLines: ShabadLine[] = [
   {
     "id": "line-1",
-    "gurmukhi": "ੴ ਸਿਤ ਨਾਮ ੁਕਰਤਾ ਪਰੁਖ ੁਿਨਰਭਉ ਿਨਰਵਰੈ ੁਅਕਾਲ ਮਰੂਿਤ",
+    "gurmukhi": "ੴ ਸਿਤ ਨਾਮ ੁਕਰਤਾ ਪਰੁਖ ੁਿਨਰਭਉ ਿਨਰਵਰੈ ੁਅਕਾਲ ਮਰੂਿਤ ਅਜੂਨੀ ਸੈਭੰ ਗੁਰ ੁਪਸਾਦ ੁ॥",
     "translation": "One Universal Creator, the Name of the One is the Truth, the Being that does everything, without fear, without hate, beyond time, beyond birth, self-existent, experienced and achieved by the Guru's grace.",
     "translationSource": "BOS - Baljit Singh & Preetcharan Singh"
   },
