@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Icon from '@/components/ui/AppIcon';
+import { DEFAULT_SHABAD_LINES, ShabadLine } from '@/data/shabadLines';
 
 interface SearchResult {
   id: string;
@@ -14,10 +15,11 @@ interface SearchResult {
 
 interface ShabadSearchPanelProps {
   onShabadSelect: (shabadId: string) => void;
+  shabadLines?: ShabadLine[];
   className?: string;
 }
 
-const ShabadSearchPanel = ({ onShabadSelect, className = '' }: ShabadSearchPanelProps) => {
+const ShabadSearchPanel = ({ onShabadSelect, shabadLines = DEFAULT_SHABAD_LINES, className = '' }: ShabadSearchPanelProps) => {
   const [searchType, setSearchType] = useState<'ang' | 'text'>('text');
   const [angNumber, setAngNumber] = useState('');
   const [searchText, setSearchText] = useState('');
@@ -68,6 +70,14 @@ const ShabadSearchPanel = ({ onShabadSelect, className = '' }: ShabadSearchPanel
     },
   ];
 
+  // Use provided shabadLines or create search results from mock data
+  const effectiveLines = shabadLines.length > 0 ? shabadLines : mockResults.map((r, i) => ({
+    id: r.id,
+    gurmukhi: r.firstLine,
+    translation: '',
+    translationSource: r.source,
+  }));
+
   // Normalize Gurmukhi text for better matching
   const normalizeGurmukhi = (text: string): string => {
     return text
@@ -81,30 +91,48 @@ const ShabadSearchPanel = ({ onShabadSelect, className = '' }: ShabadSearchPanel
     
     setTimeout(() => {
       if (searchType === 'ang' && angNumber) {
-        const filtered = mockResults.filter(result => 
-          result.ang.toString().includes(angNumber)
-        );
+        // For Ang number search, search by line index (1-based)
+        const lineNum = parseInt(angNumber);
+        const filtered = effectiveLines
+          .map((line, index) => ({
+            id: line.id,
+            firstLine: line.gurmukhi,
+            ang: index + 1,
+            source: line.translationSource || 'Jap Ji Sahib',
+            author: 'Guru Nanak Dev Ji',
+            raag: 'No Raag',
+          }))
+          .filter(result => result.ang === lineNum);
         setResults(filtered);
       } else if (searchType === 'text' && searchText) {
         // Normalize both search text and result text for accurate Gurmukhi matching
         const normalizedSearch = normalizeGurmukhi(searchText);
         
-        const filtered = mockResults.filter(result => {
-          const normalizedResult = normalizeGurmukhi(result.firstLine);
-          
-          // Check if any word in the search query matches
-          const searchWords = normalizedSearch.split(/\s+/);
-          return searchWords.some(word => 
-            word.length > 0 && normalizedResult.includes(word)
-          );
-        });
+        const filtered = effectiveLines
+          .map((line, index) => ({
+            id: line.id,
+            firstLine: line.gurmukhi,
+            ang: index + 1,
+            source: line.translationSource || 'Jap Ji Sahib',
+            author: 'Guru Nanak Dev Ji',
+            raag: 'No Raag',
+          }))
+          .filter(result => {
+            const normalizedResult = normalizeGurmukhi(result.firstLine);
+            
+            // Check if any word in the search query matches
+            const searchWords = normalizedSearch.split(/\s+/);
+            return searchWords.some(word => 
+              word.length > 0 && normalizedResult.includes(word)
+            );
+          });
         
         setResults(filtered);
       } else {
         setResults([]);
       }
       setIsSearching(false);
-    }, 500);
+    }, 300);
   };
 
   const handleResultClick = (shabadId: string) => {

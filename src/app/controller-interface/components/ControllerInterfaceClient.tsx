@@ -5,6 +5,7 @@ import PresentationModeSwitcher from '@/components/common/PresentationModeSwitch
 import ShabadSearchPanel from './ShabadSearchPanel';
 import ShabadContentPanel from './ShabadContentPanel';
 import CustomSlideEditor from './CustomSlideEditor';
+import { DEFAULT_SHABAD_LINES } from '@/data/shabadLines';
 
 type PresentationMode = 'shabad' | 'custom';
 
@@ -129,7 +130,10 @@ const ControllerInterfaceClient = () => {
           <div className={`${activeTab === 'search' ? 'block' : 'hidden'} lg:block`}>
             <div className="h-[calc(100vh-80px)] bg-surface rounded-lg border border-border p-6">
               {presentationMode === 'shabad' ? (
-                <ShabadSearchPanel onShabadSelect={handleShabadSelect} />
+                <ShabadSearchPanel 
+                  onShabadSelect={handleShabadSelect}
+                  shabadLines={DEFAULT_SHABAD_LINES}
+                />
               ) : (
                 <CustomSlideEditor
                   onDisplayToggle={handleDisplayToggle}
