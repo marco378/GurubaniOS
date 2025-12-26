@@ -6,6 +6,7 @@ import { DEFAULT_SHABAD_LINES, ShabadLine } from '@/data/shabadLines';
 
 interface ShabadContentPanelProps {
   shabadId: string | null;
+  initialLineIndex?: number;
   onLineChange?: (lineIndex: number) => void;
   onDisplayToggle?: (isDisplaying: boolean) => void;
   className?: string;
@@ -13,11 +14,16 @@ interface ShabadContentPanelProps {
 
 const ShabadContentPanel = ({
   shabadId,
+  initialLineIndex = 0,
   onLineChange,
   onDisplayToggle,
   className = '',
 }: ShabadContentPanelProps) => {
-  const [currentLineIndex, setCurrentLineIndex] = useState(0);
+  const [currentLineIndex, setCurrentLineIndex] = useState(initialLineIndex);
+  // Sync currentLineIndex with parent when shabadId or initialLineIndex changes
+  useEffect(() => {
+    setCurrentLineIndex(initialLineIndex);
+  }, [shabadId, initialLineIndex]);
   const [isDisplaying, setIsDisplaying] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingLineId, setEditingLineId] = useState<string | null>(null);
@@ -106,6 +112,38 @@ const ShabadContentPanel = ({
       localStorage.removeItem('gurbani-display-state');
     }
   }, [isDisplaying, currentLineIndex, shabadLines, shabadId]);
+
+  // Listen for projector navigation (storage event or polling)
+  useEffect(() => {
+    if (!isDisplaying) return;
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'gurbani-display-state' && e.newValue) {
+        try {
+          const state = JSON.parse(e.newValue);
+          if (typeof state.currentLineIndex === 'number' && state.currentLineIndex !== currentLineIndex) {
+            setCurrentLineIndex(state.currentLineIndex);
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    // Polling fallback (for same-tab navigation)
+    const pollInterval = setInterval(() => {
+      try {
+        const saved = localStorage.getItem('gurbani-display-state');
+        if (saved) {
+          const state = JSON.parse(saved);
+          if (typeof state.currentLineIndex === 'number' && state.currentLineIndex !== currentLineIndex) {
+            setCurrentLineIndex(state.currentLineIndex);
+          }
+        }
+      } catch {}
+    }, 500);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(pollInterval);
+    };
+  }, [isDisplaying, currentLineIndex]);
 
   const handleLineClick = (index: number) => {
     if (isEditMode) {

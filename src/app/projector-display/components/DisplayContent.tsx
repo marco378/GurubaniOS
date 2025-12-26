@@ -23,6 +23,7 @@ interface DisplayContentProps {
   className?: string;
 }
 
+
 const DisplayContent = ({ className = '' }: DisplayContentProps) => {
   const [isHydrated, setIsHydrated] = useState(false);
   const [displayState, setDisplayState] = useState<DisplayState>({
@@ -30,6 +31,46 @@ const DisplayContent = ({ className = '' }: DisplayContentProps) => {
     currentLineIndex: 0,
     lines: [],
   });
+
+  // Helper to update state and sync to localStorage
+  const updateCurrentLineIndex = (newIndex: number) => {
+    setDisplayState(prev => {
+      const updated = { ...prev, currentLineIndex: newIndex };
+      try {
+        localStorage.setItem('gurbani-display-state', JSON.stringify(updated));
+      } catch (e) {
+        // ignore
+      }
+      return updated;
+    });
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!isHydrated) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (displayState.mode !== 'shabad' || displayState.lines.length === 0) return;
+      if (
+        e.key === 'ArrowDown' ||
+        e.key === 'ArrowRight'
+      ) {
+        // Next line
+        if (displayState.currentLineIndex < displayState.lines.length - 1) {
+          updateCurrentLineIndex(displayState.currentLineIndex + 1);
+        }
+      } else if (
+        e.key === 'ArrowUp' ||
+        e.key === 'ArrowLeft'
+      ) {
+        // Previous line
+        if (displayState.currentLineIndex > 0) {
+          updateCurrentLineIndex(displayState.currentLineIndex - 1);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isHydrated, displayState]);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -45,9 +86,13 @@ const DisplayContent = ({ className = '' }: DisplayContentProps) => {
         if (savedState) {
           const state = JSON.parse(savedState);
           setDisplayState(state);
+        } else {
+          // If display state is missing, set to blank
+          setDisplayState({ mode: 'blank', currentLineIndex: 0, lines: [] });
         }
       } catch (error) {
         console.error('Error loading display state:', error);
+        setDisplayState({ mode: 'blank', currentLineIndex: 0, lines: [] });
       }
     };
 
@@ -92,7 +137,7 @@ const DisplayContent = ({ className = '' }: DisplayContentProps) => {
       <div className={`min-h-screen bg-black flex items-center justify-center ${className}`}>
         <div className="text-center space-y-4">
           <div className="w-16 h-16 mx-auto border-4 border-white/10 border-t-white/30 rounded-full animate-spin" />
-          <p className="text-white/30 text-xl">Waiting for content...</p>
+          <p className="text-white/30 text-xl">Waiting for content from Presenter...</p>
         </div>
       </div>
     );

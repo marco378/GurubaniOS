@@ -83,6 +83,8 @@ const Header = ({ className = '' }: HeaderProps) => {
                     : 'text-text-secondary hover:text-foreground hover:bg-muted'
                 }
               `}
+              target={item.name === 'Projector Display' ? '_blank' : undefined}
+              rel={item.name === 'Projector Display' ? 'noopener noreferrer' : undefined}
             >
               <Icon name={item.icon as any} size={20} />
               <span>{item.name}</span>
@@ -118,6 +120,8 @@ const Header = ({ className = '' }: HeaderProps) => {
                       : 'text-text-secondary hover:text-foreground hover:bg-muted'
                   }
                 `}
+                target={item.name === 'Projector Display' ? '_blank' : undefined}
+                rel={item.name === 'Projector Display' ? 'noopener noreferrer' : undefined}
               >
                 <Icon name={item.icon as any} size={20} />
                 <span>{item.name}</span>

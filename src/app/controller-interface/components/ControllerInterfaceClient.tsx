@@ -40,9 +40,10 @@ const ControllerInterfaceClient = () => {
     setIsDisplaying(false);
   };
 
-  const handleShabadSelect = (shabadId: string) => {
+  // Accept lineIndex, default to 0 if not provided
+  const handleShabadSelect = (shabadId: string, lineIndex: number = 0) => {
     setSelectedShabadId(shabadId);
-    setCurrentLineIndex(0);
+    setCurrentLineIndex(lineIndex);
     setActiveTab('content');
   };
 
@@ -148,6 +149,7 @@ const ControllerInterfaceClient = () => {
               {presentationMode === 'shabad' ? (
                 <ShabadContentPanel
                   shabadId={selectedShabadId}
+                  initialLineIndex={currentLineIndex}
                   onLineChange={handleLineChange}
                   onDisplayToggle={handleDisplayToggle}
                 />

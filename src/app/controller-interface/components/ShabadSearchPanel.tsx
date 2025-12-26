@@ -14,7 +14,7 @@ interface SearchResult {
 }
 
 interface ShabadSearchPanelProps {
-  onShabadSelect: (shabadId: string) => void;
+  onShabadSelect: (shabadId: string, lineIndex?: number) => void;
   shabadLines?: ShabadLine[];
   className?: string;
 }
@@ -135,9 +135,10 @@ const ShabadSearchPanel = ({ onShabadSelect, shabadLines = DEFAULT_SHABAD_LINES,
     }, 300);
   };
 
-  const handleResultClick = (shabadId: string) => {
+  // Pass both shabadId and lineIndex to the handler
+  const handleResultClick = (shabadId: string, lineIndex: number) => {
     setSelectedId(shabadId);
-    onShabadSelect(shabadId);
+    onShabadSelect(shabadId, lineIndex);
   };
 
   const handleClearSearch = () => {
@@ -252,37 +253,45 @@ const ShabadSearchPanel = ({ onShabadSelect, shabadLines = DEFAULT_SHABAD_LINES,
                 {results.length} {results.length === 1 ? 'Result' : 'Results'} Found
               </h3>
             </div>
-            {results.map((result) => (
-              <button
-                key={result.id}
-                onClick={() => handleResultClick(result.id)}
-                className={`
-                  w-full text-left p-4 rounded-lg border transition-smooth
-                  ${
-                    selectedId === result.id
-                      ? 'bg-primary/10 border-primary shadow-elevated'
-                      : 'bg-surface border-border hover:bg-muted hover:border-muted'
-                  }
-                `}
-              >
-                <div className="space-y-2">
-                  <p className="text-base font-medium text-foreground line-clamp-2">
-                    {result.firstLine}
-                  </p>
-                  <div className="flex items-center gap-3 text-xs text-text-secondary">
-                    <span className="flex items-center gap-1">
-                      <Icon name="BookOpenIcon" size={14} />
-                      Ang {result.ang}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Icon name="MusicalNoteIcon" size={14} />
-                      {result.raag}
-                    </span>
+            {results.map((result, idx) => {
+              let lineIndex = 0;
+              if (searchType === 'ang') {
+                lineIndex = result.ang - 1;
+              } else {
+                lineIndex = shabadLines.findIndex(line => line.id === result.id);
+              }
+              return (
+                <button
+                  key={result.id}
+                  onClick={() => handleResultClick(result.id, lineIndex)}
+                  className={`
+                    w-full text-left p-4 rounded-lg border transition-smooth
+                    ${
+                      selectedId === result.id
+                        ? 'bg-primary/10 border-primary shadow-elevated'
+                        : 'bg-surface border-border hover:bg-muted hover:border-muted'
+                    }
+                  `}
+                >
+                  <div className="space-y-2">
+                    <p className="text-base font-medium text-foreground line-clamp-2">
+                      {result.firstLine}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-text-secondary">
+                      <span className="flex items-center gap-1">
+                        <Icon name="BookOpenIcon" size={14} />
+                        Ang {result.ang}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Icon name="MusicalNoteIcon" size={14} />
+                        {result.raag}
+                      </span>
+                    </div>
+                    <p className="text-xs text-text-secondary">{result.author}</p>
                   </div>
-                  <p className="text-xs text-text-secondary">{result.author}</p>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </>
         ) : (angNumber || searchText) && !isSearching ? (
           <div className="flex flex-col items-center justify-center p-8 bg-surface rounded-lg border border-border">
